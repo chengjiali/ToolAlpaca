@@ -81,8 +81,8 @@ def build_dataset(api_info):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-api", "--api_data_path", type=str, default="")
-    parser.add_argument("-out", "--output_path", type=str, default="./data")
+    parser.add_argument("-api", "--api_data_path", type=str, default="data/train_data.json")
+    parser.add_argument("-out", "--output_path", type=str, default="data/output.json")
     args = parser.parse_args()
 
     api_data = json.load(open(args.api_data_path, "r", encoding="utf-8"))
