@@ -87,20 +87,25 @@ if __name__ == "__main__":
 
     api_data = json.load(open(args.api_data_path, "r", encoding="utf-8"))
 
-    all_data = []
+    import pandas as pd
+    df = pd.DataFrame(api_data)
+    for cat in df.Category.value_counts().index[:5]:
+        curr_api_data = [i for i in api_data if i['Category'] != cat]
 
-    for api in api_data:
-        if api.get("Function_Description") is None:
-            continue
-        data = build_dataset(api)
-        all_data.extend(data)
+        all_data = []
 
-    all_lengths = {}
-    for i in all_data:
-        if len(i[0]) not in all_lengths:
-            all_lengths[len(i[0])] = 0
-        all_lengths[len(i[0])] += 1
-    print(all_lengths)
-    print(len(all_data))
+        for api in curr_api_data:
+            if api.get("Function_Description") is None:
+                continue
+            data = build_dataset(api)
+            all_data.extend(data)
 
-    json.dump(all_data, open(args.output_path, "w", encoding="utf-8"), ensure_ascii=False, indent=4)
+        all_lengths = {}
+        for i in all_data:
+            if len(i[0]) not in all_lengths:
+                all_lengths[len(i[0])] = 0
+            all_lengths[len(i[0])] += 1
+        print(all_lengths)
+        print(len(all_data))
+
+        json.dump(all_data, open(f'data/class_unlearn-{cat}.json', "w", encoding="utf-8"), ensure_ascii=False, indent=4)

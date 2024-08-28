@@ -13,6 +13,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+import wandb
 from dataclasses import dataclass, field
 import json
 import pathlib
@@ -39,6 +40,8 @@ class DataArguments:
     data_path: str = field(default=None,
                            metadata={"help": "Path to the training data."})
     lazy_preprocess: bool = False
+    remove_class: str = field(default='Development',
+                           metadata={"help": "Path to the training data."})
 
 
 @dataclass
@@ -119,7 +122,7 @@ class SupervisedDataset(Dataset):
                  tokenizer: transformers.PreTrainedTokenizer):
         super(SupervisedDataset, self).__init__()
         rank0_print("Loading data...")
-        list_data_dict = json.load(open(data_path, "r"))
+        list_data_dict = json.load(open(data_path, "r"))[:5]
 
         rank0_print("Formatting inputs...")
         data_dict = preprocess(list_data_dict, tokenizer)
@@ -188,6 +191,19 @@ def train():
     parser = transformers.HfArgumentParser(
         (ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+
+
+    # Wandb
+    # training_args.report_to = ['wandb']
+    # project = 'Tool Unlearning'
+    # group = 'ToolAlpaca'
+    # name = '-'.join(['retrain', 'class_unlearn', data_args.remove_class, model_args.model_name_or_path])
+    # run_id = '-'.join(['ToolAlpaca', 'retrain', 'class_unlearn', data_args.remove_class, model_args.model_name_or_path])
+    # wandb.init(project=project, group=group, name=name, config=training_args, id=run_id, resume='allow')
+
+    training_args.output_dir = f'../outputs/ToolAlpaca/retrain/wo_{data_args.remove_class}'
+
+
     local_rank = training_args.local_rank
     model = transformers.AutoModelForCausalLM.from_pretrained(
         model_args.model_name_or_path,
